@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+    app_db:
+      image: mariadb:10.3.9
+      restart: always
+      volumes:
+        - data:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=${WORDPRESS_MYSQL_ROOT_PASSWORD}
+        - MYSQL_DATABASE=${WORDPRESS_MYSQL_DATABASE}
+        - MYSQL_USER=${WORDPRESS_MYSQL_USER}
+        - MYSQL_PASSWORD=${WORDPRESS_MYSQL_PASSWORD}
+      ports:
+        - 3306:3306
+      networks:
+        - app-network
+
+    app_web:
+      image: wordpress:latest
+      restart: always
+      depends_on:
+        - app_db
+      volumes:
+        - ./:/var/www/html
+        - ./config/php.ini:/usr/local/etc/php/php.ini
+      environment:
+        - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+        - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+        - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+        - WORDPRESS_DB_NAME=${WORDPRESS_MYSQL_DATABASE}
+        - WORDPRESS_DEBUG=${WORDPRESS_DEBUG}
+      ports:
+        - 8080:80
+      networks:
+        - app-network
+
+volumes:
+    data:
+    wp_data:
+
+networks:
+  app-network:
+    driver: bridge
